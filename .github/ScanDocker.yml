@@ -1,0 +1,118 @@
+name: "Scan Docker Images"
+on: push
+
+jobs:
+  SCA:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+      
+      - name: "Dependency Check"
+        uses: dependency-check/Dependency-Check_Action@main
+        id: Depcheck
+        with:
+          project: 'WebGoat'
+          path: '.'
+          format: 'SARIF'
+          out: 'reports'
+
+      - name: "Carga de reportes para poder descargarlo"
+        uses: actions/upload-artifact@master
+        with:
+           name: SCA Report
+           path: reports/dependency-check-report.sarif
+      
+      - name: "Carga de reporte SCA a GitHub Security"
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+            sarif_file: reports/dependency-check-report.sarif
+    
+  SAST:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+
+      - name: "Instalando herramienta SAST"
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest-beta
+       
+      - name: "Ejecucion herramienta"
+        run: horusec start -p="./" -o sarif -O result_SAST.sarif --return-error	true
+        continue-on-error: true
+
+      - name: "Carga de reportes para poder descargarlo"
+        uses: actions/upload-artifact@master
+        with:
+          name: SAST Report Horusec
+          path: result_SAST.sarif
+      
+      - name: "Carga de reporte SAST a GitHub Security"
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: result_SAST.sarif
+  
+  Dockerimage-ScanSecurity:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+      
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+
+      - name: "Instalando Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17' 
+          
+      - name: "Compilación y pruebas unitarias"
+        run: ./mvnw clean install 
+      
+      - name: "Cargado JAR"
+        uses: actions/upload-artifact@master
+        with:
+            name: JAR
+            path: target/*.jar
+      
+      - name: "Generación de imagen de docker"
+        run: |
+          docker build -f Dockerfile . -t webgoat/test
+          docker images
+
+      - name: "Run Trivy vulnerability scanner"
+        uses: aquasecurity/trivy-action@master
+        with:
+            image-ref: 'webgoat/test'
+            format: 'sarif'
+            output: 'trivy-results.sarif'
+            timeout: 10m0s
+            exit-code: '1'
+            severity: 'CRITICAL,HIGH'
+            scanners: vuln,secret,config
+        continue-on-error: true
+
+      - name: "Carga resultados"
+        uses: actions/upload-artifact@master
+        with:
+            name: Trivy-Resultados
+            path: trivy-results.sarif
+      
+      - name: "Carga de reporte Trivy"
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+            sarif_file: trivy-results.sarif

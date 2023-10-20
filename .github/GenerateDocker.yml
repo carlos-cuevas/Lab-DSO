@@ -1,0 +1,97 @@
+name: "Docker Images"
+on: push
+
+jobs:
+  SCA:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+      
+      - name: "Dependency Check"
+        uses: dependency-check/Dependency-Check_Action@main
+        id: Depcheck
+        with:
+          project: 'WebGoat'
+          path: '.'
+          format: 'SARIF'
+          out: 'reports'
+
+      - name: "Carga de reportes para poder descargarlo"
+        uses: actions/upload-artifact@master
+        with:
+          name: SCA Report
+          path: reports/dependency-check-report.sarif
+      
+      - name: "Carga de reporte SCA a GitHub Security"
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: reports/dependency-check-report.sarif
+    
+  SAST:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+
+      - name: "Instalando herramienta SAST"
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest-beta
+       
+      - name: "Ejecucion herramienta"
+        run: horusec start -p="./" -o sarif -O result_SAST.sarif --return-error	true
+        continue-on-error: true
+
+      - name: "Carga de reportes para poder descargarlo"
+        uses: actions/upload-artifact@master
+        with:
+          name: SAST Report Horusec
+          path: result_SAST.sarif
+
+      - name: "Carga de reporte SAST a GitHub Security"
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: result_SAST.sarif
+
+  Docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+
+      - name: "Instalando Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17' 
+          
+      - name: "Compilación y ejecucion"
+        run: ./mvnw clean install 
+      
+      - name: "Carga JAR"
+        uses: actions/upload-artifact@master
+        with:
+            name: JAR
+            path: ${{github.workspace}}/target/*.jar
+      
+      - name: "Generación de imagen de docker"
+        run: |
+          docker build -f Dockerfile . -t webgoat/test
+          docker images
+          docker run --name webgoat -d -p 127.0.0.1:8080:8080 -p 127.0.0.1:9090:9090 webgoat/test
+          echo "Up server..."
+          sleep 45
+          curl http://127.0.0.1:8080/WebGoat/login
+          docker stop $(docker ps -aq)
+          docker rm $(docker ps -aq)
+      
