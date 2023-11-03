@@ -60,8 +60,8 @@ jobs:
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
-          apt install ansible -y
-          cd Ansible
+          sudo apt update
+          sudo apt install -y ansiblecd Ansible
           echo "$PRIVATE_KEY" >> $HOME/key.pem
           chmod 400 $HOME/key.pem
           sed -i "s/ip/$ip_webgoat/g" inventario
