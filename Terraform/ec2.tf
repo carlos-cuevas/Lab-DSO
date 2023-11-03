@@ -7,6 +7,9 @@ resource "aws_instance" "my_instance" {
   tags = {
     Name = "My Instance"
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 output "My_ip"{

@@ -1,0 +1,8 @@
+[aws]
+IP
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=Demo.pem
+host_key_checking = False
+
