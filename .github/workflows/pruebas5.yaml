@@ -43,6 +43,7 @@ jobs:
           echo "$PRIVATE_KEY" >> $HOME/key.pem
           chmod 400 $HOME/key.pem
           cat inventario
+          echo ip_webgoat
           sed -i "s/IP/$ip_webgoat/g" inventario
           cat inventario
 
