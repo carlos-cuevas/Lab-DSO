@@ -19,8 +19,6 @@ jobs:
       - name: "Obteniendo código de repositorio"
         uses: actions/checkout@v3
       
-      
-
       - name: "Configuración de credenciales en AWS"
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -44,9 +42,9 @@ jobs:
           sudo apt install -y ansible
           cd Ansible
           echo "$PRIVATE_KEY" >> $HOME/key.pem
-          sudo chmod 600 $HOME/key.pem
+          sudo chmod 400 $HOME/key.pem
           export ANSIBLE_HOST_KEY_CHECKING=False
-          ansible-playbook -i inventario server.yml --become 
+          ansible-playbook -i inventario server.yml --become --private-key $HOME/key.pem
         continue-on-error: true
           
       - name: "Destruccion de infraestructura"
