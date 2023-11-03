@@ -47,3 +47,11 @@ jobs:
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/w2x5h8r5
           docker push public.ecr.aws/w2x5h8r5/demo1:latest
+      
+      - name: "Aprovisianamiento con terraform"
+        run: |
+          terraform plan -out tfplan
+          terraform apply tfplan >> results_tfplan.txt
+          ip_webgoat=$(cat results_tfplan.txt | grep "My_ip = " | awk '{ print $3 }' | sed 's/"//g')
+          terraform plan -destroy -out tfplan
+          terraform apply tfplan
