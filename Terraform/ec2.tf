@@ -17,7 +17,7 @@ output "My_ip"{
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "demo"
+  name        = "demo2"
   description = "https"
   vpc_id      = "vpc-f1a4d39a"
 
