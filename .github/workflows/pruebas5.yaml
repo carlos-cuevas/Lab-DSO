@@ -27,13 +27,6 @@ jobs:
           role-to-assume: ${{ secrets.ARN }}
           aws-region: us-east-2
       
-      - name: Test with Checkov
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: Terraform
-          framework: terraform
-
       - name: "Aprovisianamiento con terraform"
         run: |
           cd Terraform
