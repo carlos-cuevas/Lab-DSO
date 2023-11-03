@@ -34,7 +34,7 @@ jobs:
       - name: "Generación de imagen de docker"
         run: |
           docker build -f Dockerfile . -t webgoat/test
-          docker tag webgoat/test:lastest public.ecr.aws/w2x5h8r5/demo1:latest
+          docker tag webgoat/test:latest public.ecr.aws/w2x5h8r5/demo1:latest
           docker images
 
       - name: "Configuración de credenciales en AWS"
