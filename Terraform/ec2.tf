@@ -14,7 +14,7 @@ output "My_ip"{
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "http"
+  name        = "demo"
   description = "https"
   vpc_id      = "vpc-f1a4d39a"
 
@@ -46,7 +46,7 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks     = ["0.0.0.0/0"]
   }
   tags = {
-    Name = "terraform-ec2-security-group"
+    Name = "demo"
   }
 }
 
