@@ -42,8 +42,8 @@ jobs:
           sudo apt install -y ansible
           cd Ansible
           echo "$PRIVATE_KEY" >> $HOME/key.pem
+          cat $HOME/key.pem
           chmod 400 $HOME/key.pem
-          ansible-playbook -i inventario server.yml --become
           
       - name: "Destruccion de infraestructura"
         run: |
