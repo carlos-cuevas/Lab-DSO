@@ -44,7 +44,8 @@ jobs:
           echo "$PRIVATE_KEY" >> $HOME/key.pem
           cat $HOME/key.pem
           chmod 400 $HOME/key.pem
-          ansible-playbook -i inventario server.yml --become --private-key /home/josejuan/Lab/vockey.pem
+          export ANSIBLE_HOST_KEY_CHECKING=False
+          ansible-playbook -i inventario server.yml --become --private-key $HOME/key.pem
           
       - name: "Destruccion de infraestructura"
         run: |
