@@ -18,10 +18,32 @@ jobs:
     steps:
       - name: "Obteniendo código de repositorio"
         uses: actions/checkout@v3
+
+      - name: "Instalacion Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: "Compilacion"
+        run: ./mvnw clean install
+
+      - name: "Verificar paquete"
+        run: ls -ltra target
+      
+      - name: "Generación de imagen de docker"
+        run: |
+          docker build -f Dockerfile . -t webgoat/test
+          docker tag webgoat/test:lastest public.ecr.aws/w2x5h8r5/demo1:latest
+          docker images
+
       - name: "Configuración de credenciales en AWS"
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ARN }}
           aws-region: us-east-2
-      - name: "prueba"
-        run: aws s3 ls
+
+      - name: "Subir imagen a ECR publico"
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/w2x5h8r5
+          docker push public.ecr.aws/w2x5h8r5/demo1:latest
