@@ -1,0 +1,27 @@
+name: "Scan Docker Images"
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  AWS:
+    name: Despliegue en AWS
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: "Obteniendo código de repositorio"
+        uses: actions/checkout@v3
+      - name: "Configuración de credenciales en AWS"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ARN }}
+          aws-region: us-east-2
+      - name: "prueba"
+          run: aws s3 ls

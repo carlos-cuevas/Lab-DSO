@@ -3,7 +3,7 @@ LABEL NAME = "WebGoat: Application for examples CI/CD"
 
 RUN mkdir /home/webgoat
 
-COPY target/webgoat-2023.5-SNAPSHOT.jar /home/webgoat/
+#COPY target/webgoat-2023.5-SNAPSHOT.jar /home/webgoat/
 
 EXPOSE 8080
 EXPOSE 9090
