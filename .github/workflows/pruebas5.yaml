@@ -18,12 +18,21 @@ jobs:
     steps:
       - name: "Obteniendo código de repositorio"
         uses: actions/checkout@v3
+      
+      
 
       - name: "Configuración de credenciales en AWS"
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ARN }}
           aws-region: us-east-2
+      
+      - name: Test with Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: Terraform
+          framework: terraform
 
       - name: "Aprovisianamiento con terraform"
         run: |
@@ -44,7 +53,7 @@ jobs:
           echo "$PRIVATE_KEY" >> $HOME/key.pem
           sudo chmod 600 $HOME/key.pem
           export ANSIBLE_HOST_KEY_CHECKING=False
-          ansible-playbook -i inventario server.yml --become
+          ansible-playbook -i inventario server.yml --become 
         continue-on-error: true
           
       - name: "Destruccion de infraestructura"
