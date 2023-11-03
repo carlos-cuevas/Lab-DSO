@@ -19,6 +19,12 @@ jobs:
       - name: "Obteniendo código de repositorio"
         uses: actions/checkout@v3
 
+      - name: "Configuración de credenciales en AWS"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ARN }}
+          aws-region: us-east-2
+
       - name: "Aprovisianamiento con terraform"
         run: |
           cd Terraform
