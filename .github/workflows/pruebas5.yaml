@@ -50,7 +50,7 @@ jobs:
       
       - name: "Aprovisianamiento con terraform"
         run: |
-          cd terraform
+          cd Terraform
           terraform init
           terraform plan -out tfplan
           terraform apply tfplan >> results_tfplan.txt
