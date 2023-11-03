@@ -44,7 +44,7 @@ jobs:
           chmod 400 $HOME/key.pem
           cat inventario
           sed -i "s/IP/$ip_webgoat/g" inventario
-          ansible-playbook -i inventario server.yml --become
+          cat inventario
 
       - name: "Destruccion de infraestructura"
         run: |
