@@ -43,7 +43,7 @@ jobs:
           echo "$PRIVATE_KEY" >> $HOME/key.pem
           chmod 400 $HOME/key.pem
           cat inventario
-          sed -i "s/ip/$ip_webgoat/g" inventario
+          sed -i "s/IP/$ip_webgoat/g" inventario
           ansible-playbook -i inventario server.yml --become
 
       - name: "Destruccion de infraestructura"
