@@ -43,11 +43,12 @@ jobs:
           echo "$PRIVATE_KEY" >> $HOME/key.pem
           chmod 400 $HOME/key.pem
           cat inventario
-          echo ip_webgoat
+          echo $ip_webgoat
           sed -i "s/IP/$ip_webgoat/g" inventario
           cat inventario
 
       - name: "Destruccion de infraestructura"
         run: |
+          cd Terraform
           terraform plan -destroy -out tfplan
           terraform apply tfplan
