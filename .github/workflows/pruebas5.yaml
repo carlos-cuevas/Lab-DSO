@@ -33,7 +33,7 @@ jobs:
           terraform apply tfplan >> results_tfplan.txt
           ip_webgoat=$(cat results_tfplan.txt | grep "My_ip = " | awk '{ print $3 }' | sed 's/"//g')
           sed -i "s/IP/$ip_webgoat/g" ../Ansible/inventario
-      
+          
       - name: "Ansible"
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
@@ -47,8 +47,8 @@ jobs:
           ansible-playbook -i inventario server.yml --become --private-key $HOME/key.pem
         continue-on-error: true
           
-      - name: "Destruccion de infraestructura"
-        run: |
-          cd Terraform
-          terraform plan -destroy -out tfplan
-          terraform apply tfplan
+    #  - name: "Destruccion de infraestructura"
+    #    run: |
+    #      cd Terraform
+    #      terraform plan -destroy -out tfplan
+    #      terraform apply tfplan
