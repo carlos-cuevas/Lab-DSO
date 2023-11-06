@@ -19,12 +19,66 @@ jobs:
       - name: "Obteniendo código de repositorio"
         uses: actions/checkout@v3
       
+      - name: "Instalacion Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: "Compilacion"
+        run: ./mvnw clean install
+
+      - name: "Verificar paquete"
+        run: ls -ltra target
+      
+      - name: "Dependency Check - SCA"
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: /opt/jdk
+        id: Depcheck
+        with:
+          project: 'WebGoat'
+          path: '.'
+          format: 'HTML'
+          out: 'reports'
+  
+      - name: "Verificar reporte"
+        run: ls -ltra reports
+  
+      - name: "Instalando Horusec"
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest-beta
+         
+      - name: "Horusec - SAST"
+        run: horusec start -p="./"
+      
+      - name: "Generación de imagen de docker"
+        run: |
+          docker build -f Dockerfile . -t webgoat/test
+          docker tag webgoat/test:latest public.ecr.aws/w2x5h8r5/demo1:latest
+          docker images
+      
+      - name: "Run Trivy vulnerability scanner"
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'webgoat/test'
+          timeout: 10m0s
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+          scanners: vuln,secret,config
+        continue-on-error: true    
+        
       - name: "Configuración de credenciales en AWS"
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ARN }}
           aws-region: us-east-2
-      
+
+      - name: "Subir imagen a ECR publico"
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/w2x5h8r5
+          docker push public.ecr.aws/w2x5h8r5/demo1:latest
+            
       - name: "Scan Infra: Checkov"
         uses: bridgecrewio/checkov-action@v12
         with:
